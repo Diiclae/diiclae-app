@@ -1,103 +1,64 @@
-package com.online.davincii;
+To add a fade-in animation to your `SplashScreen` activity, you can use the Android animation framework. You will create a fade-in animation resource and apply it to the root view of your splash screen layout when the activity is created.
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
+First, create an animation resource file in the `res/anim` directory. If it doesn't already exist, you will need to create the `anim` directory.
 
-import android.content.Context;
-import android.content.Intent;
-import android.os.Bundle;
-import android.os.Handler;
-import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
+1. Create a new directory named `anim` under `res`.
 
-import com.online.davincii.activities.DashboardScreen;
-import com.online.davincii.activities.UserLogin;
-import com.online.davincii.models.registger.ImageData;
-import com.online.davincii.networking.ApiClient;
-import com.online.davincii.utils.BaseUtil;
-import com.online.davincii.utils.GlobalProgressDialog;
+2. Inside the `anim` directory, create a new XML file named `fade_in.xml`.
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+3. Add the following content to `fade_in.xml`:
 
-public class SplashScreen extends AppCompatActivity {
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<alpha xmlns:android="http://schemas.android.com/apk/res/android"
+    android:duration="1000"
+    android:fromAlpha="0.0"
+    android:toAlpha="1.0" />
 
-    private ApiClient.APIInterface apiInterface;
-    private GlobalProgressDialog progress;
-    private Context context;
+```
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_splash);
+This creates a simple fade-in animation that lasts for 1000 milliseconds (1 second).
 
-        Window window = this.getWindow();
-        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-        window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-        window.setStatusBarColor(ContextCompat.getColor(this,R.color.black));
+Next, you need to apply this animation to your activity's root view in the `SplashScreen` class.
 
-        context = SplashScreen.this;
-        apiInterface = ApiClient.getClient();
-        progress = new GlobalProgressDialog(context);
+4. Modify your `onCreate` method in the `SplashScreen` class like this:
 
-        //hideSystemUI();
-//        if(!BaseUtil.getSaveDetails(context)) {
-//            imageData();
-//        }
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Intent intent;
-                if (BaseUtil.getUserLogIn(SplashScreen.this)) {
-                    intent = new Intent(SplashScreen.this, DashboardScreen.class);
-                    startActivity(intent);
-                    SplashScreen.this.finish();
-                } else {
-                    intent = new Intent(SplashScreen.this, UserLogin.class);
-                    startActivity(intent);
-                    SplashScreen.this.finish();
-                }
+```java
+@Override
+protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_splash);
 
+    // Apply fade-in animation to the root view
+    View rootView = findViewById(android.R.id.content);
+    Animation fadeIn = AnimationUtils.loadAnimation(this, R.anim.fade_in);
+    rootView.startAnimation(fadeIn);
+
+    Window window = this.getWindow();
+    window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+    window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+    window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+    window.setStatusBarColor(ContextCompat.getColor(this, R.color.black));
+
+    context = SplashScreen.this;
+    apiInterface = ApiClient.getClient();
+    progress = new GlobalProgressDialog(context);
+
+    new Handler().postDelayed(new Runnable() {
+        @Override
+        public void run() {
+            Intent intent;
+            if (BaseUtil.getUserLogIn(SplashScreen.this)) {
+                intent = new Intent(SplashScreen.this, DashboardScreen.class);
+                startActivity(intent);
+            } else {
+                intent = new Intent(SplashScreen.this, UserLogin.class);
+                startActivity(intent);
             }
-        }, 3500);
-    }
-
-//    private void imageData() {
-//        if (!BaseUtil.isNetworkAvailable(context)) {
-//            BaseUtil.showToast(context, "Check your internet connectivity");
-//            return;
-//        }
-//        this.apiInterface.getImageData().enqueue(new Callback<ImageData>() {
-//            @Override
-//            public void onResponse(Call<ImageData> call, Response<ImageData> response) {
-//                if (response.isSuccessful()) {
-//                    BaseUtil.showToast(context, response.body().getMessage());
-//                    if (response.body().getError().equals("0")) {
-//                        BaseUtil.putImageKey(context, response.body().getS3KEY());
-//                        BaseUtil.putImageSec(context, response.body().getSecret());
-//                        BaseUtil.putSaveDetails(context, true);
-//                    }
-//                } else {
-//                    BaseUtil.showToast(context, "Server error");
-//                }
-//            }
-//            @Override
-//            public void onFailure(Call<ImageData> call, Throwable t) {
-//                BaseUtil.showToast(context, "Failed to connect with server");
-//            }
-//        })
-//  }
-
-    private void hideSystemUI() {
-        View decorView = getWindow().getDecorView();
-        decorView.setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_IMMERSIVE | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_FULLSCREEN);
-    }
+            SplashScreen.this.finish();
+        }
+    }, 3500);
 }
+```
+
+This will cause the entire splash screen to fade in when the activity is launched, providing a smooth transition experience for the user. The fade-in animation is set to occur over one second as specified in the `fade_in.xml` animation resource. Adjust the `android:duration` value to fit your preference if necessary.
